@@ -1,0 +1,42 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Parameters:
+  Environment:
+    Type: String
+    Description: "The environment for the deployment (dev or prod)"
+    AllowedValues:
+      - dev
+      - prod
+    Default: dev
+    ConstraintDescription: "Must be either 'dev' or 'prod'."
+  S3Key:
+    Type: String
+    Description: The S3 key for the lambda function zip file.
+
+Resources:
+  AuthAtEdgeFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub "auth-at-edge-${Environment}"
+      Runtime: nodejs20.x
+      Role:
+        Fn::ImportValue: !Sub "LambdaExecutionAuthAtEdgeRoleArn-${Environment}"
+      Handler: index.handler
+      Code:
+        S3Bucket:
+          Fn::ImportValue: !Sub "AuthAtEdgeBucketName-${Environment}"
+        S3Key: !Ref S3Key
+      Timeout: 5
+      MemorySize: 128
+      
+  MyLambdaVersion:
+    Type: AWS::Lambda::Version
+    Properties:
+      FunctionName: !Ref AuthAtEdgeFunction
+
+Outputs:
+  AuthAtEdgeFunctionArn:
+    Description: "ARN of the Lambda@Edge function"
+    Value: !Ref MyLambdaVersion
+    Export:
+      Name: !Sub "AuthAtEdgeFunctionArn-${Environment}"
