@@ -1,0 +1,27 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Parameters:
+  Environment:
+    Type: String
+    Default: "dev"
+    Description: "The environment for the deployment (dev or prod)"
+    AllowedValues:
+      - dev
+      - prod
+    ConstraintDescription: "Must be either 'dev' or 'prod'."
+  AuthAtEdgeBucketName:
+    Type: String
+    Default: "100-letters-project-auth-at-edge"
+    Description: "S3 bucket for storing auth-at-edge lambda deployment"
+
+Resources:
+  AuthAtEdgeBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${AuthAtEdgeBucketName}-${Environment}"
+
+Outputs:
+  AuthAtEdgeBucketName:
+    Value: !Ref AuthAtEdgeBucket
+    Export:
+      Name: !Sub "AuthAtEdgeBucketName-${Environment}"

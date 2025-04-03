@@ -1,13 +1,10 @@
-const envFileName =
-  process.env.NODE_ENV === 'production' ? '.env.production' : '.env.test';
-
-require('dotenv').config({ path: envFileName });
+require('dotenv').config();
 const {
   CognitoIdentityProviderClient,
   InitiateAuthCommand,
 } = require('@aws-sdk/client-cognito-identity-provider');
 
-const userPoolWebClientId = process.env.NEXT_PUBLIC_COGNITO_USER_POOL_CLIENT_ID;
+const userPoolWebClientId = process.env.COGNITO_USER_POOL_CLIENT_ID;
 const username = process.env.COGNITO_USER_POOL_USERNAME;
 const password = process.env.COGNITO_USER_POOL_PASSWORD;
 
