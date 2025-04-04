@@ -195,7 +195,7 @@ npm run format
 
 The build command runs webpack and outputs the build artifacts into a `dist/` directory. Pre-build, a clean command removes the `dist` directory. Webpack performs minification but leaves the handler name intact so it remains discoverable by the AWS lambda service.
 
-The package command zips the contents of the `dist/` folder for the lambda deployment. Before running a build, ensure you have installed dependencies.
+The package command zips the contents of the `dist/` folder for the lambda deployment. Before running a build, ensure you have dependencies installed.
 
 Lambda at edge deployments must have a package size under 1MB. Using webpack optimization the bundle size is less than 50KB.
 
@@ -259,7 +259,7 @@ The deploy pipeline is triggered manually via a workflow dispatch event, allowin
 
 1. **Build:** Builds and packages the lambda using webpack.
 2. **Linting:** Runs linting checks.
-3. **Testing:** Run unit tests.
+3. **Testing:** Runs unit tests.
 4. **Code Coverage:** Checks code coverage remains above 80%.
 5. **Artifact Generation:** Generates a versioned artifact name.
 6. **S3 Upload:** Uploads the packaged lambda to S3.
