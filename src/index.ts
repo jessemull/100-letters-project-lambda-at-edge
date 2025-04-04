@@ -43,7 +43,7 @@ async function verifyToken(token: string) {
     const { payload } = await jwtVerify(token, key, { algorithms: ["RS256"] });
 
     if (payload.aud !== COGNITO_USER_POOL_CLIENT_ID) {
-      throw new Error("Invalid audience");
+      throw new Error("Invalid audience!");
     }
 
     return payload;
