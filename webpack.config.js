@@ -1,43 +1,48 @@
-const webpack = require('webpack');
-const path = require('path');
-const dotenv = require('dotenv');
-const TerserPlugin = require('terser-webpack-plugin');
+const webpack = require("webpack");
+const path = require("path");
+const dotenv = require("dotenv");
+const TerserPlugin = require("terser-webpack-plugin");
 
 dotenv.config();
 
 module.exports = {
-  entry: './src/index.ts',
+  entry: "./src/index.ts",
   devtool: false,
+  target: "node",
   output: {
-    filename: 'index.js',
-    libraryTarget: 'commonjs2',
-    path: path.resolve(__dirname, 'dist'),
+    filename: "index.js",
+    libraryTarget: "commonjs2",
+    path: path.resolve(__dirname, "dist"),
   },
   resolve: {
-    extensions: ['.ts', '.js'],
-    fallback: {
-      buffer: require.resolve('buffer'),
-      crypto: require.resolve('crypto-browserify'),
-      events: require.resolve('events'),
-      http: require.resolve('stream-http'),
-      https: require.resolve('https-browserify'),
-      path: require.resolve('path-browserify'),
-      stream: require.resolve('stream-browserify'),
-      url: require.resolve('url'),
-      util: require.resolve('util'),
-      vm: require.resolve('vm-browserify'),
-    },
+    extensions: [".ts", ".js"],
+  },
+  externals: {
+    assert: "commonjs assert",
+    buffer: "commonjs buffer",
+    crypto: "commonjs crypto",
+    events: "commonjs events",
+    fs: "commonjs fs",
+    http: "commonjs http",
+    https: "commonjs https",
+    module: "commonjs module",
+    os: "commonjs os",
+    path: "commonjs path",
+    stream: "commonjs stream",
+    url: "commonjs url",
+    util: "commonjs util",
+    vm: "commonjs vm",
   },
   module: {
     rules: [
       {
         test: /\.ts$/,
-        use: 'ts-loader',
+        use: "ts-loader",
         exclude: /node_modules/,
       },
     ],
   },
-  mode: 'none',
+  mode: "none",
   optimization: {
     minimize: true,
     minimizer: [
@@ -56,10 +61,10 @@ module.exports = {
   },
   plugins: [
     new webpack.DefinePlugin({
-      'process.env.COGNITO_USER_POOL_ID': JSON.stringify(
+      "process.env.COGNITO_USER_POOL_ID": JSON.stringify(
         process.env.COGNITO_USER_POOL_ID,
       ),
-      'process.env.COGNITO_USER_POOL_CLIENT_ID': JSON.stringify(
+      "process.env.COGNITO_USER_POOL_CLIENT_ID": JSON.stringify(
         process.env.COGNITO_USER_POOL_CLIENT_ID,
       ),
     }),
