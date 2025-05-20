@@ -1,16 +1,23 @@
 import axios from "axios";
 import path from "path";
 import { CloudFrontRequestEvent, CloudFrontRequestResult } from "aws-lambda";
-import { jwtVerify, importJWK } from "jose";
+import { jwtVerify, importJWK, JWTPayload, JWK } from "jose";
 
 const COGNITO_USER_POOL_ID = process.env.COGNITO_USER_POOL_ID;
 const COGNITO_USER_POOL_CLIENT_ID = process.env.COGNITO_USER_POOL_CLIENT_ID;
 const JWKS_URI = `https://cognito-idp.us-west-2.amazonaws.com/${COGNITO_USER_POOL_ID}/.well-known/jwks.json`;
 
-async function fetchJWKS() {
+let cachedKeys: JWK[] | undefined = undefined;
+
+async function fetchJWKS(): Promise<JWK[]> {
+  if (cachedKeys) {
+    return cachedKeys;
+  }
   try {
     const response = await axios.get(JWKS_URI);
-    return response.data.keys;
+    const keys: JWK[] = response.data.keys;
+    cachedKeys = keys;
+    return keys;
   } catch (error) {
     console.error("Unable to fetch JWKS: ", error);
     throw new Error("Unable to fetch JWKS!");
@@ -19,7 +26,7 @@ async function fetchJWKS() {
 
 async function getSigningKey(kid: string) {
   const keys = await fetchJWKS();
-  const signingKey = keys.find((key: { kid: string }) => key.kid === kid);
+  const signingKey = keys.find((key) => key.kid === kid);
 
   if (!signingKey) {
     throw new Error("No signing key found!");
@@ -39,17 +46,21 @@ async function verifyToken(token: string) {
 
   const key = await getSigningKey(decodedHeader.kid);
 
-  try {
-    const { payload } = await jwtVerify(token, key, { algorithms: ["RS256"] });
+  const { payload }: { payload: JWTPayload } = await jwtVerify(token, key, {
+    algorithms: ["RS256"],
+  });
 
-    if (payload.aud !== COGNITO_USER_POOL_CLIENT_ID) {
-      throw new Error("Invalid audience!");
-    }
-
-    return payload;
-  } catch (error) {
-    throw new Error("JWT verification failed: " + (error as Error).message);
+  const now = Math.floor(Date.now() / 1000);
+  if (payload.exp && payload.exp < now) {
+    throw new Error("Token has expired!");
   }
+
+  const audience = payload.aud || payload.client_id;
+  if (audience !== COGNITO_USER_POOL_CLIENT_ID) {
+    throw new Error("Invalid audience!");
+  }
+
+  return payload;
 }
 
 export const handler = async (
@@ -87,7 +98,7 @@ export const handler = async (
     }
 
     const tokenMatch = cookieHeader.match(
-      /100_letters_cognito_id_token=([^;]+)/,
+      /(?:^|;\s*)100_letters_cognito_access_token=([^;]+)/,
     );
 
     if (!tokenMatch) {
@@ -104,7 +115,10 @@ export const handler = async (
       await verifyToken(token);
       return request;
     } catch (error) {
-      console.error("JWT Verification Failed: ", error);
+      console.error("JWT Verification Failed: ", {
+        message: (error as Error).message,
+        token,
+      });
       return {
         status: "403",
         statusDescription: "Forbidden",
