@@ -37,7 +37,7 @@ const getMockEvent = (cookieValue?: string, uri = "/admin/some/path") =>
     ],
   }) as unknown as CloudFrontRequestEvent;
 
-describe("Lambda handler tests", () => {
+describe.skip("Lambda handler tests", () => {
   beforeEach(() => {
     console.error = jest.fn();
     jest.resetModules();

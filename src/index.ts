@@ -86,14 +86,20 @@ export const handler = async (
 
   request.uri = uri;
 
-  if (normalizedUri.startsWith("/admin")) {
+  // 💡 Ensure we match both /admin and /admin.html
+  if (
+    normalizedUri.startsWith("/admin") ||
+    normalizedUri.startsWith("/admin.html")
+  ) {
     const cookieHeader = headers["cookie"]?.[0]?.value;
+
+    console.log("Cookie Header: ", cookieHeader);
 
     if (!cookieHeader) {
       return {
         status: "403",
         statusDescription: "Forbidden",
-        body: "Access denied!",
+        body: "Access denied! No cookie found.",
       };
     }
 
@@ -101,11 +107,13 @@ export const handler = async (
       /(?:^|;\s*)100_letters_cognito_access_token=([^;]+)/,
     );
 
+    console.log("Token Match: ", tokenMatch?.[1]);
+
     if (!tokenMatch) {
       return {
         status: "403",
         statusDescription: "Forbidden",
-        body: "Access denied!",
+        body: "Access denied! Token not found in cookies.",
       };
     }
 
@@ -122,7 +130,7 @@ export const handler = async (
       return {
         status: "403",
         statusDescription: "Forbidden",
-        body: "Access denied!",
+        body: "Access denied! Invalid token.",
       };
     }
   }
