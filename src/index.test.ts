@@ -77,7 +77,9 @@ describe("Lambda handler tests", () => {
       data: { keys: [{ kid: "mocked-kid", alg: "RS256" }] },
     });
 
-    const event = getMockEvent("100_letters_cognito_id_token=invalid.token");
+    const event = getMockEvent(
+      "100_letters_cognito_access_token=invalid.token",
+    );
     const result = (await handler(event)) as CloudFrontResultResponse;
     expect(result.status).toBe("403");
     expect(result.body).toBe("Access denied!");
@@ -90,7 +92,9 @@ describe("Lambda handler tests", () => {
       data: { keys: [{ kid: "mocked-kid", alg: "RS256" }] },
     });
 
-    const event = getMockEvent(`100_letters_cognito_id_token=${getToken()}`);
+    const event = getMockEvent(
+      `100_letters_cognito_access_token=${getToken()}`,
+    );
     const result = (await handler(event)) as CloudFrontResultResponse;
     expect(result.status).toBe("403");
     expect(result.body).toBe("Access denied!");
@@ -105,9 +109,25 @@ describe("Lambda handler tests", () => {
       data: { keys: [{ kid: "mocked-kid", alg: "RS256" }] },
     });
 
-    const event = getMockEvent(`100_letters_cognito_id_token=${getToken()}`);
+    const event = getMockEvent(
+      `100_letters_cognito_access_token=${getToken()}`,
+    );
+
+    // Prepare expected request with normalized URI like handler does
+    const expectedRequest = { ...event.Records[0].cf.request };
+    const uriWithoutQuery = expectedRequest.uri.split("?")[0];
+    const hasExtension = /\.[a-zA-Z0-9]+$/.test(uriWithoutQuery);
+    if (!hasExtension) {
+      expectedRequest.uri =
+        uriWithoutQuery +
+        ".html" +
+        (expectedRequest.uri.includes("?")
+          ? "?" + expectedRequest.uri.split("?")[1]
+          : "");
+    }
+
     const result = await handler(event);
-    expect(result).toEqual(event.Records[0].cf.request);
+    expect(result).toEqual(expectedRequest);
   });
 
   it("should handle query params if JWT verification is successful", async () => {
@@ -119,12 +139,26 @@ describe("Lambda handler tests", () => {
       data: { keys: [{ kid: "mocked-kid", alg: "RS256" }] },
     });
 
+    const uri = "/admin/some/path?key=value";
     const event = getMockEvent(
-      `100_letters_cognito_id_token=${getToken()}`,
-      "/admin/some/path?key=value",
+      `100_letters_cognito_access_token=${getToken()}`,
+      uri,
     );
+
+    const expectedRequest = { ...event.Records[0].cf.request };
+    const uriWithoutQuery = expectedRequest.uri.split("?")[0];
+    const hasExtension = /\.[a-zA-Z0-9]+$/.test(uriWithoutQuery);
+    if (!hasExtension) {
+      expectedRequest.uri =
+        uriWithoutQuery +
+        ".html" +
+        (expectedRequest.uri.includes("?")
+          ? "?" + expectedRequest.uri.split("?")[1]
+          : "");
+    }
+
     const result = await handler(event);
-    expect(result).toEqual(event.Records[0].cf.request);
+    expect(result).toEqual(expectedRequest);
   });
 
   it("should handle request for root directory", async () => {
@@ -137,7 +171,7 @@ describe("Lambda handler tests", () => {
     });
 
     const event = getMockEvent(
-      `100_letters_cognito_id_token=${getToken()}`,
+      `100_letters_cognito_access_token=${getToken()}`,
       "/",
     );
     const result = await handler(event);
@@ -151,7 +185,9 @@ describe("Lambda handler tests", () => {
     });
     (axios.get as jest.Mock).mockRejectedValue(new Error("Network out!"));
 
-    const event = getMockEvent(`100_letters_cognito_id_token=${getToken()}`);
+    const event = getMockEvent(
+      `100_letters_cognito_access_token=${getToken()}`,
+    );
     const result = (await handler(event)) as CloudFrontResultResponse;
     expect(result.status).toBe("403");
     expect(result.body).toBe("Access denied!");
@@ -166,7 +202,9 @@ describe("Lambda handler tests", () => {
       data: { keys: [{ kid: "mocked-kid", alg: "RS256" }] },
     });
 
-    const event = getMockEvent(`100_letters_cognito_id_token=${getToken()}`);
+    const event = getMockEvent(
+      `100_letters_cognito_access_token=${getToken()}`,
+    );
     const result = (await handler(event)) as CloudFrontResultResponse;
     expect(result.status).toBe("403");
     expect(result.body).toBe("Access denied!");
@@ -177,7 +215,9 @@ describe("Lambda handler tests", () => {
       data: { keys: [] },
     });
 
-    const event = getMockEvent(`100_letters_cognito_id_token=${getToken()}`);
+    const event = getMockEvent(
+      `100_letters_cognito_access_token=${getToken()}`,
+    );
     const result = (await handler(event)) as CloudFrontResultResponse;
     expect(result.status).toBe("403");
     expect(result.body).toBe("Access denied!");
@@ -188,7 +228,7 @@ describe("Lambda handler tests", () => {
       throw new Error("Invalid JWT: Missing kid");
     });
     const event = getMockEvent(
-      `100_letters_cognito_id_token=${getToken(undefined, "")}`,
+      `100_letters_cognito_access_token=${getToken(undefined, "")}`,
     );
     const result = (await handler(event)) as CloudFrontResultResponse;
     expect(result.status).toBe("403");
@@ -197,7 +237,7 @@ describe("Lambda handler tests", () => {
 
   it("should return 403 on uncaught errors", async () => {
     (axios.get as jest.Mock).mockRejectedValue(new Error("Bad call!"));
-    const event = getMockEvent("100_letters_cognito_id_token=valid.token");
+    const event = getMockEvent("100_letters_cognito_access_token=valid.token");
     const result = (await handler(event)) as CloudFrontResultResponse;
     expect(result.status).toBe("403");
     expect(result.body).toBe("Access denied!");
