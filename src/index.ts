@@ -86,14 +86,11 @@ export const handler = async (
 
   request.uri = uri;
 
-  // 💡 Ensure we match both /admin and /admin.html
   if (
     normalizedUri.startsWith("/admin") ||
     normalizedUri.startsWith("/admin.html")
   ) {
     const cookieHeader = headers["cookie"]?.[0]?.value;
-
-    console.log("Cookie Header: ", cookieHeader);
 
     if (!cookieHeader) {
       return {
