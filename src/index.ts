@@ -1,64 +1,18 @@
-import axios from "axios";
 import path from "path";
 import { CloudFrontRequestEvent, CloudFrontRequestResult } from "aws-lambda";
-import { jwtVerify, importJWK, JWTPayload, JWK } from "jose";
+import { jwtVerify, createRemoteJWKSet } from "jose";
 
 const COGNITO_USER_POOL_ID = process.env.COGNITO_USER_POOL_ID;
 const COGNITO_USER_POOL_CLIENT_ID = process.env.COGNITO_USER_POOL_CLIENT_ID;
 const JWKS_URI = `https://cognito-idp.us-west-2.amazonaws.com/${COGNITO_USER_POOL_ID}/.well-known/jwks.json`;
 
-let cachedKeys: JWK[] | undefined = undefined;
-
-async function fetchJWKS(): Promise<JWK[]> {
-  if (cachedKeys) {
-    return cachedKeys;
-  }
-  try {
-    const response = await axios.get(JWKS_URI);
-    const keys: JWK[] = response.data.keys;
-    cachedKeys = keys;
-    return keys;
-  } catch (error) {
-    console.error("Unable to fetch JWKS: ", error);
-    throw new Error("Unable to fetch JWKS!");
-  }
-}
-
-async function getSigningKey(kid: string) {
-  const keys = await fetchJWKS();
-  const signingKey = keys.find((key) => key.kid === kid);
-
-  if (!signingKey) {
-    throw new Error("No signing key found!");
-  }
-
-  return await importJWK(signingKey, "RS256");
-}
+const JWKS = createRemoteJWKSet(new URL(JWKS_URI));
 
 async function verifyToken(token: string) {
-  const decodedHeader = JSON.parse(
-    Buffer.from(token.split(".")[0], "base64").toString(),
-  );
-
-  if (!decodedHeader.kid) {
-    throw new Error("Invalid JWT: missing kid!");
-  }
-
-  const key = await getSigningKey(decodedHeader.kid);
-
-  const { payload }: { payload: JWTPayload } = await jwtVerify(token, key, {
+  const { payload } = await jwtVerify(token, JWKS, {
     algorithms: ["RS256"],
+    audience: COGNITO_USER_POOL_CLIENT_ID,
   });
-
-  const now = Math.floor(Date.now() / 1000);
-  if (payload.exp && payload.exp < now) {
-    throw new Error("Token has expired!");
-  }
-
-  const audience = payload.aud || payload.client_id;
-  if (audience !== COGNITO_USER_POOL_CLIENT_ID) {
-    throw new Error("Invalid audience!");
-  }
 
   return payload;
 }
@@ -85,6 +39,8 @@ export const handler = async (
   }
 
   request.uri = uri;
+
+  console.log("URI: ", uri, "Normalized URI: ", normalizedUri);
 
   if (
     normalizedUri.startsWith("/admin") ||
