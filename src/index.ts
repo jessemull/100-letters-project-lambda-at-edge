@@ -3,7 +3,6 @@ import { CloudFrontRequestEvent, CloudFrontRequestResult } from "aws-lambda";
 import { jwtVerify, createRemoteJWKSet } from "jose";
 
 const COGNITO_USER_POOL_ID = process.env.COGNITO_USER_POOL_ID;
-const COGNITO_USER_POOL_CLIENT_ID = process.env.COGNITO_USER_POOL_CLIENT_ID;
 const JWKS_URI = `https://cognito-idp.us-west-2.amazonaws.com/${COGNITO_USER_POOL_ID}/.well-known/jwks.json`;
 
 const JWKS = createRemoteJWKSet(new URL(JWKS_URI));
@@ -11,8 +10,19 @@ const JWKS = createRemoteJWKSet(new URL(JWKS_URI));
 async function verifyToken(token: string) {
   const { payload } = await jwtVerify(token, JWKS, {
     algorithms: ["RS256"],
-    audience: COGNITO_USER_POOL_CLIENT_ID,
+    issuer: `https://cognito-idp.us-west-2.amazonaws.com/${COGNITO_USER_POOL_ID}`,
   });
+
+  if (payload.token_use !== "access") {
+    throw new Error("Invalid token use: expected access token");
+  }
+
+  if (
+    typeof payload.scope !== "string" ||
+    !payload.scope.split(" ").includes("aws.cognito.signin.user.admin")
+  ) {
+    throw new Error("Insufficient permissions!");
+  }
 
   return payload;
 }

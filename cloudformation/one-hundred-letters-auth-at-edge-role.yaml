@@ -31,16 +31,18 @@ Resources:
             Statement:
               - Effect: "Allow"
                 Action:
-                  - "logs:*"
-                Resource: "*"
-              - Effect: "Allow"
-                Action:
                   - "s3:GetObject"
                 Resource:
                   - Fn::Sub:
                       - "arn:aws:s3:::${BucketName}/*"
                       - BucketName:
                           Fn::ImportValue: !Sub "AuthAtEdgeBucketName-${Environment}"
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "arn:aws:logs:*:*:*"
         - PolicyName: LambdaSecretsManagerAccess
           PolicyDocument:
             Version: '2012-10-17'
