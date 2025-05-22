@@ -11,6 +11,7 @@ This repository is part of the **100 Letters Project** which includes the follow
 - **[100 Letters Project API](https://github.com/jessemull/100-letters-project-api)**: The **100 Letters Project** API.
 - **[100 Letters Project Client](https://github.com/jessemull/100-letters-project)**: The **100 Letters Project** NextJS client.
 - **[100 Letters Project Lambda@Edge](https://github.com/jessemull/100-letters-project-lambda-at-edge)**: The **100 Letters Project** Lambda@Edge.
+- **[100 Letters Project Authorizer](https://github.com/jessemull/100-letters-project-authorizer)**: The **100 Letters Project** authorizer.
 
 ## Table of Contents
 
@@ -41,9 +42,9 @@ This repository is part of the **100 Letters Project** which includes the follow
    - [Rollback](#rollback)
 10. [Connecting to the Bastion Host](#connecting-to-the-bastion-host)
     - [Environment Variables](#environment-variables)
-11. [Cognito ID Token](#cognito-id-token)
-    - [Generating An ID Token](#generating-an-id-token)
-    - [Using An ID Token](#using=an-id-token)
+11. [Cognito Access Token](#cognito-access-token)
+    - [Generating An Access Token](#generating-an-access-token)
+    - [Using An Access Token](#using-an-access-token)
     - [Environment Variables](#environment-variables)
 12. [License](#license)
 
@@ -53,7 +54,7 @@ This project implements an **AWS Lambda@Edge** function for the **100 Letters Pr
 
 ### **Key Features:**
 
-- **Cognito Authentication**: Protects the `/admin` route by verifying AWS Cognito ID tokens stored in cookies.
+- **Cognito Authentication**: Protects the `/admin` route by verifying AWS Cognito access tokens stored in cookies.
 - **Deep Linking Support**: Ensures that requests for missing `.html` extensions are correctly routed.
 - **Edge Computing**: Executes logic at CloudFront edge locations for minimal latency and improved security.
 - **Next.js Compatibility**: Works with static site exports to provide seamless navigation.
@@ -289,19 +290,19 @@ The rollback pipeline is triggered manually via a workflow dispatch event, allow
 
 1. **CloudFormation Deployment:** Creates, executes and monitors a change set.
 
-## Cognito ID Token
+## Cognito Access Token
 
-All write routes are protected via Cognito User Pools. A valid ID token is required to use these endpoints and access the UI.
+All write routes are protected via Cognito User Pools. A valid access token is required to use these endpoints and access the UI.
 
-### Generating An ID Token
+### Generating An Access Token
 
-To generate a valid ID token:
+To generate a valid access token:
 
 ```bash
 npm run token
 ```
 
-### Using An ID Token
+### Using An Access Token
 
 To use the API add the token to the Authorization request header:
 
