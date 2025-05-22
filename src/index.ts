@@ -28,7 +28,7 @@ async function verifyToken(token: string) {
 }
 
 function isAdminPath(uri: string): boolean {
-  return /^\/admin(?:\/.*)?$/i.test(uri);
+  return uri.toLowerCase().startsWith("/admin");
 }
 
 export const handler = async (
@@ -50,8 +50,6 @@ export const handler = async (
   }
 
   request.uri = uri;
-
-  console.log("Normalized URI:", normalizedUri, "Final URI:", request.uri);
 
   if (isAdminPath(normalizedUri)) {
     const cookieHeader = headers["cookie"]?.[0]?.value;
