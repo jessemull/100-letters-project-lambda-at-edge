@@ -27,6 +27,10 @@ async function verifyToken(token: string) {
   return payload;
 }
 
+function isAdminPath(uri: string): boolean {
+  return /^\/admin(?:\/.*)?$/i.test(uri);
+}
+
 export const handler = async (
   event: CloudFrontRequestEvent,
 ): Promise<CloudFrontRequestResult> => {
@@ -34,28 +38,22 @@ export const handler = async (
   const headers = request.headers;
   let uri = request.uri;
 
-  if (uri === "/") {
-    uri = "/index.html";
-  }
-
   const [uriWithoutQuery] = uri.split("?");
   const normalizedUri = path
     .normalize(decodeURIComponent(uriWithoutQuery))
+    .replace(/\/+$/, "")
     .toLowerCase();
-  const hasExtension = /\.[a-zA-Z0-9]+$/.test(normalizedUri);
 
+  const hasExtension = /\.[a-zA-Z0-9]+$/.test(normalizedUri);
   if (!hasExtension) {
-    uri = `${uriWithoutQuery}.html${uri.includes("?") ? "?" + uri.split("?")[1] : ""}`;
+    uri = `${normalizedUri}.html${uri.includes("?") ? "?" + uri.split("?")[1] : ""}`;
   }
 
   request.uri = uri;
 
-  console.log("URI: ", uri, "Normalized URI: ", normalizedUri);
+  console.log("Normalized URI:", normalizedUri, "Final URI:", request.uri);
 
-  if (
-    normalizedUri.startsWith("/admin") ||
-    normalizedUri.startsWith("/admin.html")
-  ) {
+  if (isAdminPath(normalizedUri)) {
     const cookieHeader = headers["cookie"]?.[0]?.value;
 
     if (!cookieHeader) {
@@ -69,8 +67,6 @@ export const handler = async (
     const tokenMatch = cookieHeader.match(
       /(?:^|;\s*)100_letters_cognito_access_token=([^;]+)/,
     );
-
-    console.log("Token Match: ", tokenMatch?.[1]);
 
     if (!tokenMatch) {
       return {
@@ -86,9 +82,8 @@ export const handler = async (
       await verifyToken(token);
       return request;
     } catch (error) {
-      console.error("JWT Verification Failed: ", {
+      console.error("JWT Verification Failed:", {
         message: (error as Error).message,
-        token,
       });
       return {
         status: "403",
