@@ -39,12 +39,14 @@ export const handler = async (
   let uri = request.uri;
 
   const [uriWithoutQuery] = uri.split("?");
+
   const normalizedUri = path
     .normalize(decodeURIComponent(uriWithoutQuery))
     .replace(/\/+$/, "")
     .toLowerCase();
 
   const hasExtension = /\.[a-zA-Z0-9]+$/.test(normalizedUri);
+
   if (!hasExtension) {
     uri = `${normalizedUri}.html${uri.includes("?") ? "?" + uri.split("?")[1] : ""}`;
   }
@@ -80,9 +82,7 @@ export const handler = async (
       await verifyToken(token);
       return request;
     } catch (error) {
-      console.error("JWT Verification Failed:", {
-        message: (error as Error).message,
-      });
+      console.error("JWT Verification Failed: ", (error as Error).message);
       return {
         status: "403",
         statusDescription: "Forbidden",
