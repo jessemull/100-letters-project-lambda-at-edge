@@ -36,6 +36,11 @@ export const handler = async (
 ): Promise<CloudFrontRequestResult> => {
   const request = event.Records[0].cf.request;
   const headers = request.headers;
+
+  if (request.uri === "/") {
+    request.uri = "/index.html";
+  }
+
   let uri = request.uri;
 
   const [uriWithoutQuery] = uri.split("?");
