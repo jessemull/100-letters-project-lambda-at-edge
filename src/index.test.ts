@@ -53,7 +53,7 @@ describe("Lambda@Edge handler", () => {
   });
 
   it("should return the request for non-admin URIs", async () => {
-    const event = getMockEvent("/home");
+    const event = getMockEvent("/");
     const result = await handler(event);
     expect(result).toEqual(event.Records[0].cf.request);
   });
