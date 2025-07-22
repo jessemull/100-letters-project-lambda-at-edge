@@ -143,4 +143,126 @@ describe("Lambda@Edge handler", () => {
     const result = await handler(event);
     expect(result).toEqual(event.Records[0].cf.request);
   });
+
+  it("should redirect non-canonical domain to canonical domain (root)", async () => {
+    const event = getMockEvent("/");
+    event.Records[0].cf.request.headers["host"] = [
+      { value: "onehundredletters.com" },
+    ];
+    event.Records[0].cf.request.headers["cloudfront-forwarded-proto"] = [
+      { value: "https" },
+    ];
+    const result = await handler(event);
+    expect(result).toMatchObject({
+      status: "301",
+      statusDescription: "Moved Permanently",
+      headers: {
+        location: [
+          {
+            key: "Location",
+            value: "https://www.onehundredletters.com/",
+          },
+        ],
+      },
+    });
+  });
+
+  it("should redirect non-canonical domain to canonical domain (with path and query)", async () => {
+    const event = getMockEvent("/about?foo=bar");
+    event.Records[0].cf.request.headers["host"] = [
+      { value: "onehundredletters.com" },
+    ];
+    event.Records[0].cf.request.headers["cloudfront-forwarded-proto"] = [
+      { value: "https" },
+    ];
+    event.Records[0].cf.request.querystring = "foo=bar";
+    const result = await handler(event);
+    expect(result).toMatchObject({
+      status: "301",
+      statusDescription: "Moved Permanently",
+      headers: {
+        location: [
+          {
+            key: "Location",
+            value: "https://www.onehundredletters.com/about.html?foo=bar",
+          },
+        ],
+      },
+    });
+  });
+
+  it("should redirect and not append .html if path already has extension", async () => {
+    const event = getMockEvent("/foo.json");
+    event.Records[0].cf.request.headers["host"] = [
+      { value: "onehundredletters.com" },
+    ];
+    const result = await handler(event);
+    expect(result).toMatchObject({
+      status: "301",
+      headers: {
+        location: [
+          {
+            value: "https://www.onehundredletters.com/foo.json",
+          },
+        ],
+      },
+    });
+  });
+
+  it("should redirect to '/' if request.uri is undefined", async () => {
+    const event = getMockEvent();
+    event.Records[0].cf.request.uri = "";
+    event.Records[0].cf.request.headers["host"] = [
+      { value: "onehundredletters.com" },
+    ];
+    const result = await handler(event);
+    expect(result).toMatchObject({
+      status: "301",
+      headers: {
+        location: [
+          {
+            value: "https://www.onehundredletters.com/",
+          },
+        ],
+      },
+    });
+  });
+
+  it("should default to https if cloudfront-forwarded-proto header is missing", async () => {
+    const event = getMockEvent("/foo");
+    event.Records[0].cf.request.headers["host"] = [
+      { value: "onehundredletters.com" },
+    ];
+    // No cloudfront-forwarded-proto header
+    const result = await handler(event);
+    expect(result).toMatchObject({
+      status: "301",
+      headers: {
+        location: [
+          {
+            value: "https://www.onehundredletters.com/foo.html",
+          },
+        ],
+      },
+    });
+  });
+
+  it("should handle redirect with only '?' as query string", async () => {
+    const event = getMockEvent("/foo?");
+    event.Records[0].cf.request.headers["host"] = [
+      { value: "onehundredletters.com" },
+    ];
+    event.Records[0].cf.request.querystring = "";
+    const result = await handler(event);
+    expect(result).toMatchObject({
+      status: "301",
+      headers: {
+        location: [
+          {
+            value: "https://www.onehundredletters.com/foo.html",
+          },
+        ],
+      },
+    });
+  });
 });
