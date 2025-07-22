@@ -37,6 +37,47 @@ export const handler = async (
   const request = event.Records[0].cf.request;
   const headers = request.headers;
 
+  // Redirect non-canonical domain to canonical domain...
+
+  const hostHeader = headers["host"]?.[0]?.value;
+
+  if (hostHeader === "onehundredletters.com") {
+    const protocol =
+      headers["cloudfront-forwarded-proto"]?.[0]?.value || "https";
+
+    let requestPath = request.uri || "/";
+    let redirectPath: string;
+
+    if (requestPath === "/") {
+      redirectPath = "/";
+    } else {
+      const [uriWithoutQuery] = requestPath.split("?");
+
+      const normalizedUri = path
+        .normalize(decodeURIComponent(uriWithoutQuery))
+        .replace(/\/+$/, "")
+        .toLowerCase();
+      const hasExtension = /\.[a-zA-Z0-9]+$/.test(normalizedUri);
+
+      redirectPath = hasExtension ? normalizedUri : `${normalizedUri}.html`;
+    }
+
+    const querystring = request.querystring ? `?${request.querystring}` : "";
+
+    return {
+      status: "301",
+      statusDescription: "Moved Permanently",
+      headers: {
+        location: [
+          {
+            key: "Location",
+            value: `${protocol}://www.onehundredletters.com${redirectPath}${querystring}`,
+          },
+        ],
+      },
+    };
+  }
+
   if (request.uri === "/") {
     request.uri = "/index.html";
   }
