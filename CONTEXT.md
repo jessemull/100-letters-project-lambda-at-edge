@@ -91,7 +91,7 @@ CI runs build, lint, and Jest (with coverage) on PRs — see `docs/CI_CD.md`.
 | Field             | Value                                                                                   |
 | ----------------- | --------------------------------------------------------------------------------------- |
 | **Project**       | 100 Letters Project — Lambda@Edge (`auth-at-edge`)                                      |
-| **Stack**         | TypeScript, Webpack, Jose (JWT), Jest, ESLint 9 flat config                             |
+| **Stack**         | TypeScript, Webpack, Jose (JWT), Jest, ESLint 10 flat config                            |
 | **Hosting**       | AWS Lambda@Edge on CloudFront (S3 static Next.js site origin)                           |
 | **Role**          | Cognito access-token gate for `/admin`, HTML deep-link rewrite, canonical host redirect |
 | **Sibling repos** | API, Next client, API authorizer (not in this tree)                                     |
