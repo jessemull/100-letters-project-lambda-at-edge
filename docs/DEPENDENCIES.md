@@ -26,9 +26,10 @@
 
 ## Intentional version holds
 
-| Package      | Held at  | Latest blocked | Why                                                    |
-| ------------ | -------- | -------------- | ------------------------------------------------------ |
-| `typescript` | `^5.9.3` | 6.x / 7.x      | `@typescript-eslint` peers `typescript >=4.8.4 <6.1.0` |
+| Package       | Held at    | Latest blocked | Why                                                                 |
+| ------------- | ---------- | -------------- | ------------------------------------------------------------------- |
+| `typescript`  | `^6.0.3`   | 6.1+ / 7.x     | `@typescript-eslint@8` peers `typescript >=4.8.4 <6.1.0` (6.0.x OK) |
+| `@types/node` | `^24.13.3` | 26.x           | Align type defs with Lambda/CI Node **24** (`nodejs24.x`)           |
 
 ESLint **10.x** is intentional here (no `eslint-config-next`). Re-validate `@typescript-eslint` peers on each upgrade.
 
