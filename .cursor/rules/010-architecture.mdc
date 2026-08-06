@@ -1,0 +1,26 @@
+---
+description: "Lambda@Edge architecture boundaries and handler placement."
+globs:
+  - "src/**"
+  - "webpack.config.js"
+  - "template.yaml"
+  - "cloudformation/**"
+alwaysApply: false
+---
+
+# Architecture
+
+Read `docs/ARCHITECTURE.md` and `AGENTS.md` architecture sections.
+
+## MUST
+
+- Keep viewer-request behavior in the edge handler path
+- Fail closed on `/admin` auth failures
+- Preserve deep-link rewrite and canonical redirect unless intentionally changing with tests
+- Keep scripts out of the Webpack edge bundle
+
+## MUST NOT
+
+- Add Next/React/UI frameworks to this package
+- Fail open on JWT/cookie errors
+- Bloat the edge zip toward Lambda@Edge size limits

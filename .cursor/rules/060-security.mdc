@@ -1,0 +1,24 @@
+---
+description: "Secrets, JWT, and cookie security for Lambda@Edge."
+globs:
+  - "src/**"
+  - "scripts/**"
+  - "webpack.config.js"
+  - ".github/workflows/**"
+alwaysApply: false
+---
+
+# Security
+
+Read `docs/SECURITY.md`.
+
+## MUST
+
+- Use env / CI secrets for Cognito IDs — never hardcode
+- Fail closed on `/admin` when auth is missing or invalid
+- Avoid logging tokens or full cookie headers
+
+## MUST NOT
+
+- Commit `.env` or private keys
+- Weaken JWT issuer / token_use / scope checks without human review
