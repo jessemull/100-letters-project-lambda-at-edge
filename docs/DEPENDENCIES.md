@@ -26,13 +26,27 @@
 
 ## Intentional version holds
 
-| Package      | Held at | Latest blocked | Why                                                               |
-| ------------ | ------- | -------------- | ----------------------------------------------------------------- |
-| `typescript` | `^5.x`  | 6.x / 7.x      | `@typescript-eslint` peers `typescript >=4.8.4 <6.1.0` (re-check) |
+| Package       | Held at     | Latest blocked | Why                                                                          |
+| ------------- | ----------- | -------------- | ---------------------------------------------------------------------------- |
+| `typescript`  | `^5.9.3`    | 6.x / 7.x      | `@typescript-eslint` peers `typescript >=4.8.4 <6.1.0`                       |
+| `lint-staged` | `^16.4.0`   | 17.x           | `lint-staged@17` requires Node `>=22.22.1`; CI and Lambda target Node **20** |
+| `@types/node` | `^20.19.43` | 22+/26.x       | Align type defs with Lambda/CI Node **20** (`nodejs20.x`)                    |
 
-Re-validate peers on each upgrade pass. Unlike the Next.js client sibling, this repo does **not** use `eslint-config-next`, so ESLint 10 may be acceptable when `@typescript-eslint` peers allow it.
+ESLint **10.x** is intentional here (no `eslint-config-next`). Re-validate `@typescript-eslint` peers on each upgrade.
 
 Do **not** run `npm audit fix --force`.
+
+### Residual audit (post-upgrade)
+
+`npm audit` reports **0** vulnerabilities after the latest supported major bump (re-check after future upgrades).
+
+---
+
+## Recent cleanup
+
+- Removed unused runtime `axios` (handler uses `jose` only).
+- Removed unused ESLint plugins (`import` / `node` / `promise`) that were not wired in `eslint.config.js`.
+- Removed unused `webpack-merge`.
 
 ---
 
@@ -41,11 +55,11 @@ Do **not** run `npm audit fix --force`.
 - LLM provider SDKs in the edge bundle
 - React / Next / UI kits
 - Global state managers
-- Unused HTTP clients (prefer removing dead runtime deps)
+- Unused HTTP clients
 
 ---
 
 ## Engines
 
 - Develop and CI against **Node 20** to match `template.yaml` (`nodejs20.x`) and GitHub Actions `node-version: '20'`.
-- `package.json` `engines.node` should stay aligned with that runtime.
+- `package.json` `engines.node` is `>=20 <23`.
