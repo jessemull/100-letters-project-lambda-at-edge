@@ -2,13 +2,14 @@
   "compilerOptions": {
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "module": "commonjs",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
     "skipLibCheck": true,
     "strict": true,
-    "target": "ES6",
+    "target": "ES2022",
+    "types": ["node", "jest"],
     "outDir": "dist/",
-    "rootDir": ".",
-    "baseUrl": "."
+    "rootDir": "."
   },
   "include": ["src/index.ts"],
   "exclude": ["node_modules", "dist", "build", "coverage", "scripts"]
