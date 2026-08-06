@@ -55,6 +55,9 @@
     "*.css": "prettier --write",
     "*.md": "prettier --write"
   },
+  "engines": {
+    "node": ">=20 <23"
+  },
   "main": "dist/index.js",
   "name": "auth-at-edge",
   "scripts": {
@@ -64,14 +67,15 @@
     "commit": "git-cz",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "lint": "eslint --ext .ts",
-    "lint:fix": "eslint --ext .ts --fix",
+    "lint": "eslint . --fix",
+    "lint:fix": "eslint . --fix",
     "package": "cd dist && zip -rq auth-at-edge.zip ./*",
     "prebuild": "npm run clean",
     "prepare": "husky",
     "test": "jest",
     "test:watch": "jest --watch",
-    "token": "node ./scripts/cognito-token.js"
+    "token": "node ./scripts/cognito-token.js",
+    "typecheck": "tsc --noEmit"
   },
   "version": "1.0.0"
 }

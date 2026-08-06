@@ -1,0 +1,22 @@
+---
+description: "Jest coverage and testing conventions for the edge handler."
+globs:
+  - "**/*.test.ts"
+  - "jest.config.js"
+alwaysApply: false
+---
+
+# Testing
+
+Read `docs/TESTING.md`.
+
+## MUST
+
+- Keep ≥80% coverage thresholds
+- Prefer behavior tests of `handler` outcomes
+- Mock `jose` rather than hitting Cognito JWKS
+
+## MUST NOT
+
+- Delete tests only to greenwash coverage
+- Lower `coverageThreshold` without human approval

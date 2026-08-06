@@ -1,0 +1,12 @@
+---
+description: "Comment policy — prefer why over what."
+globs:
+  - "**/*.{ts,js}"
+alwaysApply: false
+---
+
+# Comments
+
+Read `docs/COMMENTS.md`.
+
+Explain **why**, not **what**. Use blank lines around standalone comments. No long-lived commented-out code.
