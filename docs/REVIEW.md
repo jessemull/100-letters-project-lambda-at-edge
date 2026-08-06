@@ -47,7 +47,7 @@
 ### TypeScript / Lambda
 
 - Strict types respected; handler export remains `index.handler`
-- Node 20 / edge limits respected
+- Node 24 / edge limits respected
 
 ### Auth / routing
 

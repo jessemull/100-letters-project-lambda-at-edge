@@ -34,7 +34,7 @@ Sibling repos own the Next.js client, API, and API authorizer. This function onl
 | `src/index.ts`       | Viewer-request handler (redirect, rewrite, JWT auth)   |
 | `src/index.test.ts`  | Unit tests for handler behavior                        |
 | `webpack.config.js`  | Bundle for Lambda; DefinePlugin for Cognito env        |
-| `template.yaml`      | Lambda function + version (Node 20, 128MB, 5s timeout) |
+| `template.yaml`      | Lambda function + version (Node 24, 128MB, 5s timeout) |
 | `cloudformation/`    | Supporting IAM role and artifact bucket stacks         |
 | `scripts/`           | Local ops: bastion SSH, Cognito token, preflight       |
 | `docs/`              | Governance documentation                               |

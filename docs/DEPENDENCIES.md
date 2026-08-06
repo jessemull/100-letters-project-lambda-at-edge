@@ -26,11 +26,9 @@
 
 ## Intentional version holds
 
-| Package       | Held at     | Latest blocked | Why                                                                          |
-| ------------- | ----------- | -------------- | ---------------------------------------------------------------------------- |
-| `typescript`  | `^5.9.3`    | 6.x / 7.x      | `@typescript-eslint` peers `typescript >=4.8.4 <6.1.0`                       |
-| `lint-staged` | `^16.4.0`   | 17.x           | `lint-staged@17` requires Node `>=22.22.1`; CI and Lambda target Node **20** |
-| `@types/node` | `^20.19.43` | 22+/26.x       | Align type defs with Lambda/CI Node **20** (`nodejs20.x`)                    |
+| Package      | Held at  | Latest blocked | Why                                                    |
+| ------------ | -------- | -------------- | ------------------------------------------------------ |
+| `typescript` | `^5.9.3` | 6.x / 7.x      | `@typescript-eslint` peers `typescript >=4.8.4 <6.1.0` |
 
 ESLint **10.x** is intentional here (no `eslint-config-next`). Re-validate `@typescript-eslint` peers on each upgrade.
 
@@ -47,6 +45,7 @@ Do **not** run `npm audit fix --force`.
 - Removed unused runtime `axios` (handler uses `jose` only).
 - Removed unused ESLint plugins (`import` / `node` / `promise`) that were not wired in `eslint.config.js`.
 - Removed unused `webpack-merge`.
+- Migrated Lambda/CI from deprecated `nodejs20.x` to **`nodejs24.x`** (current Lambda@Edge-supported Node LTS).
 
 ---
 
@@ -61,5 +60,6 @@ Do **not** run `npm audit fix --force`.
 
 ## Engines
 
-- Develop and CI against **Node 20** to match `template.yaml` (`nodejs20.x`) and GitHub Actions `node-version: '20'`.
-- `package.json` `engines.node` is `>=20 <23`.
+- Develop and CI against **Node 24** to match `template.yaml` (`nodejs24.x`) and GitHub Actions `node-version: '24'`.
+- `package.json` `engines.node` is `>=24 <25`.
+- Do **not** pin back to Node 20 or 22 — use the current Lambda@Edge-supported Node runtime.
