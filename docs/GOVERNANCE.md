@@ -22,7 +22,7 @@ Resolve conflicts upward, never downward.
 
 ## Non-negotiable constraints
 
-- Lambda@Edge viewer-request constraints (bundle size, Node 20 runtime, fail-closed `/admin` auth).
+- Lambda@Edge viewer-request constraints (bundle size, Node 24 runtime, fail-closed `/admin` auth).
 - TypeScript strict mode; ≥ 80% Jest coverage.
 - Conventional Commits + Husky hooks must remain enabled.
 - No hardcoded secrets; Cognito IDs only via build-time env / CI secrets.
@@ -47,7 +47,7 @@ Resolve conflicts upward, never downward.
 - Security-sensitive code (JWT verification, cookie parsing, redirects)
 - Changing admin path, cookie name, required Cognito scope, or host redirect rules
 - Removing tests or lowering coverage thresholds
-- Runtime upgrades (`nodejs20.x` → newer) or memory/timeout changes
+- Runtime upgrades (`nodejs24.x` → newer) or memory/timeout changes
 
 ### Requires explicit product decision
 

@@ -50,7 +50,7 @@ These constraints apply to **every change**. No exceptions without explicit huma
 
 ### Platform & build
 
-- **Lambda@Edge only** — viewer-request handler for CloudFront. Respect edge limits: package size (keep Webpack bundle small; Lambda@Edge limit is 1MB unzipped for viewer request), `Timeout` / `MemorySize` in `template.yaml`, and Node runtime pinned in CloudFormation (`nodejs20.x`).
+- **Lambda@Edge only** — viewer-request handler for CloudFront. Respect edge limits: package size (keep Webpack bundle small; Lambda@Edge limit is 1MB unzipped for viewer request), `Timeout` / `MemorySize` in `template.yaml`, and Node runtime pinned in CloudFormation (`nodejs24.x`).
 - **Build-time config** — Cognito pool IDs are injected via Webpack `DefinePlugin` from CI/env at build time. Do not assume runtime Lambda environment variables at the edge the way regional Lambdas do.
 - **No Node-native addons** in the edge bundle that break Webpack target `node` + CloudFront edge runtimes.
 

@@ -18,7 +18,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: !Sub "auth-at-edge-${Environment}"
-      Runtime: nodejs20.x
+      Runtime: nodejs24.x
       Role:
         Fn::ImportValue: !Sub "LambdaExecutionAuthAtEdgeRoleArn-${Environment}"
       Handler: index.handler

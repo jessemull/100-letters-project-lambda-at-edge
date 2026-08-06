@@ -11,7 +11,7 @@
 | --------------------- | ------------------------------------------------------------------------------ |
 | **Project**           | 100 Letters Project Lambda@Edge (`auth-at-edge`)                               |
 | **Architecture**      | Single CloudFront viewer-request handler                                       |
-| **Platform**          | AWS Lambda@Edge (Node.js 20)                                                   |
+| **Platform**          | AWS Lambda@Edge (Node.js 24)                                                   |
 | **Core Technologies** | TypeScript, Webpack, Jose, Jest, ESLint, Prettier                              |
 | **CI/CD**             | GitHub Actions → S3 artifact + CloudFormation (edge association partly manual) |
 | **Git Hooks**         | Husky + lint-staged + Conventional Commits (commitlint)                        |

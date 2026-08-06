@@ -33,7 +33,7 @@ CONTEXT.md > GOVERNANCE.md > ARCHITECTURE.md > domain docs > inline comments
 
 ## Non-negotiables (summary)
 
-- Lambda@Edge viewer-request constraints (bundle size, Node 20, fail-closed `/admin`)
+- Lambda@Edge viewer-request constraints (bundle size, Node 24, fail-closed `/admin`)
 - TypeScript strict; ≥80% Jest coverage
 - Conventional Commits + Husky
 - No hardcoded secrets
