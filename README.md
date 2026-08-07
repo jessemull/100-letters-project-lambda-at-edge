@@ -149,7 +149,7 @@ npm run commit
 
 ## Testing & Code Coverage
 
-This project uses **Jest** for testing. Code coverage is enforced during every CI/CD pipeline. The build will fail if any tests fail or coverage drops below **80%**.
+This project uses **Jest** for testing. Code coverage is enforced by Jest’s `coverageThreshold` in `jest.config.js` (≥ **80%** for branches, functions, lines, and statements) on every `npm test` / CI test job. The build will fail if any tests fail or coverage drops below that threshold.
 
 ### Testing Commands
 
@@ -167,7 +167,7 @@ npm run test:watch
 
 ### Code Coverage
 
-Coverage thresholds are enforced at **80%** for all metrics. The build will fail if coverage drops below this threshold.
+Coverage thresholds are enforced at **80%** for all metrics via Jest (`jest.config.js`). CI does not use a separate HTML coverage scrape; failing Jest coverage fails the test job.
 
 ## Linting & Formatting
 
@@ -258,8 +258,8 @@ The pull request pipeline is triggered when a pull request is opened against the
 
 1. **Build:** Builds and packages the lambda using webpack.
 2. **Linting:** Runs linting checks.
-3. **Testing:** Runs unit tests.
-4. **Code Coverage:** Checks code coverage remains above 80%.
+3. **Typecheck:** Runs `tsc --noEmit`.
+4. **Testing:** Runs unit tests (Jest enforces ≥80% coverage via `coverageThreshold`).
 
 This pipeline is defined in the `.github/workflows/pull-request.yml` file.
 
@@ -269,8 +269,8 @@ The deploy pipeline is triggered manually via a workflow dispatch event, allowin
 
 1. **Build:** Builds and packages the lambda using webpack.
 2. **Linting:** Runs linting checks.
-3. **Testing:** Runs unit tests.
-4. **Code Coverage:** Checks code coverage remains above 80%.
+3. **Typecheck:** Runs `tsc --noEmit`.
+4. **Testing:** Runs unit tests (Jest enforces ≥80% coverage via `coverageThreshold`).
 5. **Artifact Generation:** Generates a versioned artifact name.
 6. **S3 Upload:** Uploads the packaged lambda to S3.
 7. **CloudFormation Deployment:** Creates, executes and monitors a change set.
@@ -284,8 +284,8 @@ The merge pipeline is triggered on a merged commit to main. It deploys the lambd
 
 1. **Build:** Builds and packages the lambda using webpack.
 2. **Linting:** Runs linting checks.
-3. **Testing:** Run unit tests.
-4. **Code Coverage:** Checks code coverage remains above 80%.
+3. **Typecheck:** Runs `tsc --noEmit`.
+4. **Testing:** Runs unit tests (Jest enforces ≥80% coverage via `coverageThreshold`).
 5. **Artifact Generation:** Generates a versioned artifact name.
 6. **S3 Upload:** Uploads the packaged lambda to S3.
 7. **CloudFormation Deployment:** Creates, executes and monitors a change set.

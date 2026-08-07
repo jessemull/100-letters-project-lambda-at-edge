@@ -6,7 +6,8 @@
 
 ## Admin auth
 
-- Missing cookie / missing token / verification failure / wrong `token_use` / missing admin scope → return **403** with a short body. Do not forward the request.
+- Missing cookie / missing token / verification failure / wrong `token_use` / wrong `client_id` / missing admin scope → return **403** with a short body. Do not forward the request.
+- Cookie values are percent-encoded by the client; decode safely before verify (malformed encoding must not crash the viewer-request handler).
 - Log verification failures with `console.error` using the error **message only** — never the raw JWT or full cookie header.
 - Prefer fail-closed over fail-open on any uncertainty in the auth path.
 

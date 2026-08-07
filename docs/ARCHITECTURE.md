@@ -47,9 +47,9 @@ Sibling repos own the Next.js client, API, and API authorizer. This function onl
 1. If `Host` is `onehundredletters.com` → **301** to `www.onehundredletters.com` with normalized path.
 2. Map `/` → `/index.html`.
 3. Normalize URI (decode, lowercase, strip trailing slashes); if no extension, append `.html`.
-4. If path is under `/admin`:
-   - Require cookie `100_letters_cognito_access_token`
-   - Verify JWT with Cognito JWKS (`jose`), issuer, `token_use === access`, scope includes `aws.cognito.signin.user.admin`
+4. If path is `/admin` or under `/admin/...`:
+   - Require cookie `100_letters_cognito_access_token` (client sets with `encodeURIComponent`; edge decodes before verify)
+   - Verify JWT with Cognito JWKS (`jose`), issuer, `token_use === access`, matching `client_id`, scope includes `aws.cognito.signin.user.admin`
    - On failure → **403**; on success → forward request
 5. Otherwise forward request to origin.
 
