@@ -276,7 +276,7 @@ The deploy pipeline is triggered manually via a workflow dispatch event, allowin
 7. **CloudFormation Deployment:** Creates, executes and monitors a change set.
 8. **Backup Pruning:** Ensures only the latest five lambda package versions are stored in S3.
 
-This pipeline is defined in the `.github/workflows/deploy-lambda.yml` file.
+This pipeline is defined in the `.github/workflows/deploy.yml` file.
 
 ### Merge
 

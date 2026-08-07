@@ -8,6 +8,13 @@ const userPoolWebClientId = process.env.COGNITO_USER_POOL_CLIENT_ID;
 const username = process.env.COGNITO_USER_POOL_USERNAME;
 const password = process.env.COGNITO_USER_POOL_PASSWORD;
 
+if (!userPoolWebClientId || !username || !password) {
+  console.error(
+    "Missing required env: COGNITO_USER_POOL_CLIENT_ID, COGNITO_USER_POOL_USERNAME, COGNITO_USER_POOL_PASSWORD",
+  );
+  process.exit(1);
+}
+
 const client = new CognitoIdentityProviderClient({
   region: "us-west-2",
 });
@@ -29,11 +36,8 @@ async function authenticateUser() {
     console.log(response.AuthenticationResult.AccessToken);
   } catch (error) {
     console.error("Error authenticating user:", error);
+    process.exit(1);
   }
 }
 
-const getToken = async () => {
-  await authenticateUser();
-};
-
-getToken();
+authenticateUser();
