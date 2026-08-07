@@ -23,7 +23,7 @@ Do **not** rewrite these lightly. Document changes in the PR and treat as human-
 | Lint  | Yes       | `npm run lint`                                                            |
 | Test  | Yes       | Jest; coverage thresholds enforced by `jest.config.js` (≥80%)             |
 
-PR workflow uses Node **24** (`actions/setup-node`). Merge/deploy pin the same version.
+PR workflow uses Node **24** (`actions/setup-node`). Merge/deploy pin the same version. CI runs lint, **typecheck**, Jest (≥80% via `jest.config.js`), and build — no duplicate HTML coverage grep.
 
 ### Deploy notes
 

@@ -3,9 +3,32 @@ import { CloudFrontRequestEvent, CloudFrontRequestResult } from "aws-lambda";
 import { jwtVerify, createRemoteJWKSet } from "jose";
 
 const COGNITO_USER_POOL_ID = process.env.COGNITO_USER_POOL_ID;
+const COGNITO_USER_POOL_CLIENT_ID = process.env.COGNITO_USER_POOL_CLIENT_ID;
 const JWKS_URI = `https://cognito-idp.us-west-2.amazonaws.com/${COGNITO_USER_POOL_ID}/.well-known/jwks.json`;
 
 const JWKS = createRemoteJWKSet(new URL(JWKS_URI));
+
+function safeDecodeURIComponent(value: string): string {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
+
+function normalizePath(uriPath: string): string {
+  const [uriWithoutQuery] = uriPath.split("?");
+
+  return path
+    .normalize(safeDecodeURIComponent(uriWithoutQuery))
+    .replace(/\/+$/, "")
+    .toLowerCase();
+}
+
+function pathWithHtmlExtension(normalizedUri: string): string {
+  const hasExtension = /\.[a-zA-Z0-9]+$/.test(normalizedUri);
+  return hasExtension ? normalizedUri : `${normalizedUri}.html`;
+}
 
 async function verifyToken(token: string) {
   const { payload } = await jwtVerify(token, JWKS, {
@@ -15,6 +38,11 @@ async function verifyToken(token: string) {
 
   if (payload.token_use !== "access") {
     throw new Error("Invalid token use: expected access token");
+  }
+
+  // Cognito access tokens use client_id (not aud) for the app client.
+  if (payload.client_id !== COGNITO_USER_POOL_CLIENT_ID) {
+    throw new Error("Invalid client!");
   }
 
   if (
@@ -28,13 +56,24 @@ async function verifyToken(token: string) {
 }
 
 function isAdminPath(uri: string): boolean {
-  return uri.toLowerCase().startsWith("/admin");
+  const normalized = uri.toLowerCase();
+  return normalized === "/admin" || normalized.startsWith("/admin/");
 }
 
 export const handler = async (
   event: CloudFrontRequestEvent,
 ): Promise<CloudFrontRequestResult> => {
-  const request = event.Records[0].cf.request;
+  const record = event.Records?.[0];
+
+  if (!record?.cf?.request) {
+    return {
+      status: "400",
+      statusDescription: "Bad Request",
+      body: "Invalid CloudFront event.",
+    };
+  }
+
+  const request = record.cf.request;
   const headers = request.headers;
 
   // Redirect non-canonical domain to canonical domain...
@@ -51,15 +90,7 @@ export const handler = async (
     if (requestPath === "/") {
       redirectPath = "/";
     } else {
-      const [uriWithoutQuery] = requestPath.split("?");
-
-      const normalizedUri = path
-        .normalize(decodeURIComponent(uriWithoutQuery))
-        .replace(/\/+$/, "")
-        .toLowerCase();
-      const hasExtension = /\.[a-zA-Z0-9]+$/.test(normalizedUri);
-
-      redirectPath = hasExtension ? normalizedUri : `${normalizedUri}.html`;
+      redirectPath = pathWithHtmlExtension(normalizePath(requestPath));
     }
 
     const querystring = request.querystring ? `?${request.querystring}` : "";
@@ -84,17 +115,14 @@ export const handler = async (
 
   let uri = request.uri;
 
-  const [uriWithoutQuery] = uri.split("?");
+  const normalizedUri = normalizePath(uri);
+  const queryIndex = uri.indexOf("?");
+  const querySuffix = queryIndex >= 0 ? uri.slice(queryIndex) : "";
 
-  const normalizedUri = path
-    .normalize(decodeURIComponent(uriWithoutQuery))
-    .replace(/\/+$/, "")
-    .toLowerCase();
-
-  const hasExtension = /\.[a-zA-Z0-9]+$/.test(normalizedUri);
-
-  if (!hasExtension) {
-    uri = `${normalizedUri}.html${uri.includes("?") ? "?" + uri.split("?")[1] : ""}`;
+  if (!/\.[a-zA-Z0-9]+$/.test(normalizedUri)) {
+    uri = `${normalizedUri}.html${querySuffix}`;
+  } else {
+    uri = `${normalizedUri}${querySuffix}`;
   }
 
   request.uri = uri;
@@ -122,7 +150,8 @@ export const handler = async (
       };
     }
 
-    const token = tokenMatch[1];
+    // Client sets this cookie with encodeURIComponent (js-cookie / AuthProvider).
+    const token = safeDecodeURIComponent(tokenMatch[1]);
 
     try {
       await verifyToken(token);

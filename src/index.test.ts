@@ -11,9 +11,12 @@ jest.mock("jose", () => ({
   createRemoteJWKSet: () => jest.fn(),
 }));
 
+const TEST_CLIENT_ID = "test-client-id";
+
 const mockToken = (overrides = {}) => ({
   token_use: "access",
   scope: "aws.cognito.signin.user.admin",
+  client_id: TEST_CLIENT_ID,
   ...overrides,
 });
 
@@ -44,6 +47,7 @@ describe("Lambda@Edge handler", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     process.env.COGNITO_USER_POOL_ID = "us-west-2_test";
+    process.env.COGNITO_USER_POOL_CLIENT_ID = TEST_CLIENT_ID;
     originalConsoleError = console.error;
     console.error = jest.fn();
   });
@@ -56,6 +60,13 @@ describe("Lambda@Edge handler", () => {
     const event = getMockEvent("/");
     const result = await handler(event);
     expect(result).toEqual(event.Records[0].cf.request);
+  });
+
+  it("should not treat /administrator as an admin path", async () => {
+    const event = getMockEvent("/administrator");
+    const result = (await handler(event)) as CloudFrontRequest;
+    expect(result?.uri).toBe("/administrator.html");
+    expect(jwtVerify).not.toHaveBeenCalled();
   });
 
   it("should normalize and append .html if no extension", async () => {
@@ -76,6 +87,18 @@ describe("Lambda@Edge handler", () => {
     expect(result?.uri).toBe("/about.html");
   });
 
+  it("should tolerate malformed percent-encoding in the URI", async () => {
+    const event = getMockEvent("/about%E0%A4%A");
+    const result = (await handler(event)) as CloudFrontRequest;
+    expect(result?.uri).toMatch(/\.html$/);
+  });
+
+  it("should return 400 if CloudFront records are missing", async () => {
+    const event = { Records: [] } as unknown as CloudFrontRequestEvent;
+    const result = (await handler(event)) as CloudFrontResultResponse;
+    expect(result.status).toBe("400");
+  });
+
   it("should return 403 if no cookie header", async () => {
     const event = getMockEvent("/admin");
     const result = (await handler(event)) as CloudFrontResultResponse;
@@ -92,6 +115,17 @@ describe("Lambda@Edge handler", () => {
 
   it("should return 403 if token_use is not 'access'", async () => {
     getToken({ token_use: "id" });
+    const event = getMockEvent(
+      "/admin",
+      "100_letters_cognito_access_token=mocked.jwt.token",
+    );
+    const result = (await handler(event)) as CloudFrontResultResponse;
+    expect(result.status).toBe("403");
+    expect(result.body).toMatch("Access denied! Invalid token.");
+  });
+
+  it("should return 403 if client_id does not match", async () => {
+    getToken({ client_id: "other-client" });
     const event = getMockEvent(
       "/admin",
       "100_letters_cognito_access_token=mocked.jwt.token",
@@ -142,6 +176,33 @@ describe("Lambda@Edge handler", () => {
     );
     const result = await handler(event);
     expect(result).toEqual(event.Records[0].cf.request);
+  });
+
+  it("should decode percent-encoded cookie token values", async () => {
+    getToken();
+    const encoded = encodeURIComponent("mocked.jwt.token");
+    const event = getMockEvent(
+      "/admin",
+      `100_letters_cognito_access_token=${encoded}`,
+    );
+    const result = await handler(event);
+    expect(result).toEqual(event.Records[0].cf.request);
+    expect(jwtVerify).toHaveBeenCalledWith(
+      "mocked.jwt.token",
+      expect.anything(),
+      expect.anything(),
+    );
+  });
+
+  it("should protect nested admin paths", async () => {
+    getToken();
+    const event = getMockEvent(
+      "/admin/letters",
+      "100_letters_cognito_access_token=mocked.jwt.token",
+    );
+    const result = await handler(event);
+    expect(result).toEqual(event.Records[0].cf.request);
+    expect(jwtVerify).toHaveBeenCalled();
   });
 
   it("should redirect non-canonical domain to canonical domain (root)", async () => {
@@ -233,7 +294,6 @@ describe("Lambda@Edge handler", () => {
     event.Records[0].cf.request.headers["host"] = [
       { value: "onehundredletters.com" },
     ];
-    // No cloudfront-forwarded-proto header
     const result = await handler(event);
     expect(result).toMatchObject({
       status: "301",
