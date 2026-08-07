@@ -14,8 +14,9 @@
 
 ## Edge auth surface
 
-- Admin protection relies on cookie `100_letters_cognito_access_token` (set by the client).
-- Verify with Cognito JWKS over HTTPS; require RS256, expected issuer, `token_use: access`, and admin scope.
+- Admin protection relies on cookie `100_letters_cognito_access_token`.
+- The Next.js client sets that cookie with **`encodeURIComponent`** (`js-cookie`); this function **`decodeURIComponent`s** the value before JWT verify.
+- Verify with Cognito JWKS over HTTPS; require RS256, expected issuer, `token_use: access`, matching **`client_id`** (Cognito app client), and admin scope.
 - Fail closed: missing/invalid token → 403. Do not forward `/admin` on verification errors.
 - Do not log raw tokens or full cookie headers.
 
