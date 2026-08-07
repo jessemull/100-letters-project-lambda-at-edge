@@ -99,9 +99,7 @@ This project leverages modern web and cloud technologies to provide secure, scal
 
 - **TypeScript**: Enforces strong typing and maintainability for the authentication logic and infrastructure scripts.
 
-- **Jose**: A lightweight JavaScript library for JWT verification, used to validate authentication tokens securely.
-
-- **Axios**: Handles HTTP requests, including fetching JSON Web Keys (JWKs) from Cognito for token validation.
+- **Jose**: A lightweight JavaScript library for JWT verification against Cognito JWKS (JSON Web Key Sets).
 
 - **GitHub Actions**: Automates CI/CD workflows, handling linting, testing, and deployment of Lambda@Edge functions.
 

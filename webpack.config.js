@@ -64,9 +64,7 @@ module.exports = {
       new TerserPlugin({
         exclude: /index\.ts$/,
         terserOptions: {
-          compress: {
-            drop_console: true,
-          },
+          // Keep console.error so JWT verify failures remain visible in CloudWatch.
           output: {
             comments: false,
           },
