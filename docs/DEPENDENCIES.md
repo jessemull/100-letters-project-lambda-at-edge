@@ -39,6 +39,8 @@ Do **not** run `npm audit fix --force`.
 
 `npm audit` reports **0** vulnerabilities after the latest supported major bump (re-check after future upgrades).
 
+Latest patch bumps applied 2026-08-08: `eslint@10.8.1`, `@aws-sdk/client-cognito-identity-provider@3.1106.0`. All other direct deps already at latest within the holds above (`typescript` capped by `@typescript-eslint@8` peer `<6.1.0`; `@types/node` capped to 24.x to match `nodejs24.x`).
+
 ---
 
 ## Recent cleanup
